@@ -2,8 +2,9 @@ package main
 
 import (
 	"database/sql"
-	_ "github.com/lib/pq"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 type user struct {
