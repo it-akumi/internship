@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-statefulset
+spec:
+  serviceName: postgres
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data-volume
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      volumes:
+        - name: postgres-init-volume
+          hostPath:
+            path: /host
+            type: DirectoryOrCreate
+      containers:
+      - name: postgres
+        image: postgres:9.6
+        volumeMounts:
+          - name: postgres-init-volume
+            mountPath: /docker-entrypoint-initdb.d
+          - name: postgres-data-volume
+            mountPath: /var/lib/postgresql/data
+        ports:
+        - containerPort: 5432
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  type: ClusterIP
+  ports:
+    - name: "postgres-clusterip"
+      protocol: "TCP"
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
